@@ -1,0 +1,24 @@
+.footer {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.text {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fontsz-sm);
+  text-align: center;
+}
+
+.link {
+  color: var(--color-accent-light);
+  border-radius: var(--radius-sm);
+}
+.link:hover {
+  color: var(--color-text);
+}
+.link:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: 3px;
+}
