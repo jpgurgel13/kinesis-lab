@@ -24,8 +24,8 @@ const CORE_FORCE = 1500; // empurrão para fora do núcleo, para não virarem um
 const HEAT_SPEED = 4; // quanto a cor muda por segundo
 const AGITATION = 950; // quanto as partículas quentes tremem
 const BURST_RADIUS = 500; // pixels: alcance da explosão
-const BURST_FORCE = 700; // pixels por segundo: velocidade dada pela explosão com carga cheia
-const BURST_SPREAD = 0.25; // radianos: quanto cada direção pode desviar
+const BURST_FORCE = 1100; // pixels por segundo: velocidade dada pela explosão com carga cheia
+const BURST_SPREAD = 1.4; // radianos: quanto cada direção pode desviar
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -235,7 +235,8 @@ function applyBurst(particle: Particle, charge: ChargeState) {
   }
 
   const angle =
-    Math.atan2(distanceY, distanceX) + randomBetween(-BURST_SPREAD, BURST_SPREAD);
+    Math.atan2(distanceY, distanceX) +
+    randomBetween(-BURST_SPREAD, BURST_SPREAD);
   const closeness = 1 - distance / BURST_RADIUS;
   const impulse = charge.burstPower * BURST_FORCE * (0.3 + 0.7 * closeness);
 
