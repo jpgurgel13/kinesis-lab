@@ -19,12 +19,18 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
 
   const restingCompanion = isDemo ? companionImage.demo : companionImage.noHand;
   const isCharging = chargeStep > 0;
+  const isFullCharge = chargeStep === chargeImageList.length;
   const companion = isCharging
     ? chargeImageList[chargeStep - 1]
     : restingCompanion;
-  const companionClassName = isCharging
-    ? `${styles.companion} ${styles.charging}`
-    : styles.companion;
+
+  let companionClassName = styles.companion;
+  if (isCharging) {
+    companionClassName += ` ${styles.charging}`;
+  }
+  if (isFullCharge) {
+    companionClassName += ` ${styles.fullCharge}`;
+  }
 
   return (
     <section className={styles.experience} aria-label={modeLabel}>
