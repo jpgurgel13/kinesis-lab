@@ -44,6 +44,7 @@ export const screenTextList: ScreenText[] = [
 
 export const experienceText = {
   cameraMode: "Câmera",
+  canvasLabel: "Partículas de luz que reagem ao movimento",
   demoMode: "Demonstração",
   noHandHint: "Mostre a mão para a câmera",
   demoHint:

@@ -3,7 +3,7 @@ import { companionImage } from "../../data/mascotData";
 import Button from "../ui/Button";
 import Mascot from "../ui/Mascot";
 import styles from "./ExperienceScreen.module.css";
-
+import ParticleCanvas from "../experience/ParticleCanvas";
 type ExperienceScreenProps = {
   isDemo: boolean;
   onEnd: () => void;
@@ -25,8 +25,8 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
         </Button>
       </div>
 
-      {/* Etapa 4: o Canvas das partículas entra nesta área. */}
       <div className={styles.stage}>
+        <ParticleCanvas />
         <p className={styles.hint}>{hint}</p>
       </div>
 

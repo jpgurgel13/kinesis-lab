@@ -23,6 +23,7 @@
 }
 
 .stage {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,6 +33,7 @@
 }
 
 .hint {
+  position: relative;
   max-width: 40ch;
   color: var(--color-text-muted);
   text-align: center;
