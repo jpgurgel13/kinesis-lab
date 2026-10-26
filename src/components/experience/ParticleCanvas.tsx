@@ -11,6 +11,7 @@ import {
   createHandSummary,
   updateHandVelocity,
 } from "../../input/pointerHand";
+import { createChargeState, updateCharge } from "../../simulation/charge";
 import { drawHandMarker } from "../../simulation/handMarker";
 
 const PARTICLE_COUNT = 10000;
@@ -40,6 +41,7 @@ function ParticleCanvas() {
     );
     const hand = createHandSummary();
     const disconnectPointer = connectPointerToHand(canvas, hand);
+    const charge = createChargeState();
     let previousHandX = hand.x;
     let previousHandY = hand.y;
     let lastTime = performance.now();
@@ -64,9 +66,11 @@ function ParticleCanvas() {
       updateHandVelocity(hand, previousHandX, previousHandY, deltaTime);
       previousHandX = hand.x;
       previousHandY = hand.y;
+      updateCharge(charge, hand, deltaTime);
       updateParticleList(
         particleList,
         hand,
+        charge,
         deltaTime,
         elapsedTime,
         canvas.width,
@@ -75,7 +79,7 @@ function ParticleCanvas() {
 
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawParticleList(context, particleList);
-      drawHandMarker(context, hand);
+      drawHandMarker(context, hand, charge, elapsedTime);
 
       frameId = requestAnimationFrame(drawFrame);
     };

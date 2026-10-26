@@ -7,4 +7,5 @@ export type Particle = {
   speedFactor: number;
   age: number;
   lifespan: number;
+  heat: number;
 };

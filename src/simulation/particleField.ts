@@ -1,7 +1,8 @@
+import type { ChargeState } from "../types/chargeTypes";
 import type { HandSummary } from "../types/handTypes";
 import type { Particle } from "../types/particleTypes";
+import { getHeatColor } from "./heatColor";
 
-const PARTICLE_COLOR = "#3b82f6";
 const MAX_SPEED = 30;
 const MIN_RADIUS = 1;
 const MAX_RADIUS = 3;
@@ -16,6 +17,12 @@ const REPEL_FORCE = 800; // pixels por segundo, a cada segundo
 const DRAG_RADIUS = 100; // pixels: alcance da mão que agita a água
 const DRAG_STRENGTH = 4.4; // quanto da velocidade da mão é passado às partículas
 const MAX_DRAG_SPEED = 450; // pixels por segundo: limite do empurrão
+const ATTRACT_RADIUS = 320; // pixels: alcance da mão fechada
+const ATTRACT_FORCE = 900; // pixels por segundo, a cada segundo
+const CORE_RADIUS = 30; // pixels: o núcleo onde as partículas se acumulam
+const CORE_FORCE = 1500; // empurrão para fora do núcleo, para não virarem um ponto só
+const HEAT_SPEED = 3; // quanto a cor muda por segundo
+const AGITATION = 1200; // quanto as partículas quentes tremem
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -39,6 +46,7 @@ export function createParticleList(
       speedFactor: randomBetween(0.6, 1.4),
       age: randomBetween(0, lifespan),
       lifespan,
+      heat: 0,
     });
   }
 
@@ -59,12 +67,14 @@ function getFlowAngle(x: number, y: number, time: number) {
 export function updateParticleList(
   particleList: Particle[],
   hand: HandSummary,
+  charge: ChargeState,
   deltaTime: number,
   elapsedTime: number,
   width: number,
   height: number,
 ) {
   const steeringAmount = Math.min(STEERING * deltaTime, 1);
+  const heatAmount = Math.min(HEAT_SPEED * deltaTime, 1);
 
   for (const particle of particleList) {
     const flowAngle = getFlowAngle(particle.x, particle.y, elapsedTime);
@@ -79,10 +89,23 @@ export function updateParticleList(
       particle.velocityY +
       (targetVelocityY - particle.velocityY) * steeringAmount;
 
-    if (hand.isVisible && !hand.isClosed) {
+    let targetHeat = 0;
+
+    if (hand.isVisible && hand.isClosed) {
+      applyHandAttraction(particle, hand, charge.level, deltaTime);
+      targetHeat = getTargetHeat(particle, hand, charge.level);
+    } else if (hand.isVisible) {
       applyHandDrag(particle, hand, deltaTime);
       applyHandRepulsion(particle, hand, deltaTime);
     }
+
+    particle.heat = particle.heat + (targetHeat - particle.heat) * heatAmount;
+    particle.velocityX =
+      particle.velocityX +
+      randomBetween(-1, 1) * AGITATION * particle.heat * deltaTime;
+    particle.velocityY =
+      particle.velocityY +
+      randomBetween(-1, 1) * AGITATION * particle.heat * deltaTime;
 
     particle.x = particle.x + particle.velocityX * deltaTime;
     particle.y = particle.y + particle.velocityY * deltaTime;
@@ -151,16 +174,58 @@ function applyHandDrag(
     particle.velocityY + (handVelocityY - particle.velocityY) * dragAmount;
 }
 
+function applyHandAttraction(
+  particle: Particle,
+  hand: HandSummary,
+  chargeLevel: number,
+  deltaTime: number,
+) {
+  const distanceX = hand.x - particle.x;
+  const distanceY = hand.y - particle.y;
+  const distance = Math.hypot(distanceX, distanceY);
+
+  if (distance === 0 || distance > ATTRACT_RADIUS) {
+    return;
+  }
+
+  const directionX = distanceX / distance;
+  const directionY = distanceY / distance;
+  const closeness = 1 - distance / ATTRACT_RADIUS;
+  const strength = closeness * ATTRACT_FORCE * (0.4 + 0.6 * chargeLevel);
+
+  particle.velocityX = particle.velocityX + directionX * strength * deltaTime;
+  particle.velocityY = particle.velocityY + directionY * strength * deltaTime;
+
+  if (distance < CORE_RADIUS) {
+    const corePush = (1 - distance / CORE_RADIUS) * CORE_FORCE;
+    particle.velocityX = particle.velocityX - directionX * corePush * deltaTime;
+    particle.velocityY = particle.velocityY - directionY * corePush * deltaTime;
+  }
+}
+
+function getTargetHeat(
+  particle: Particle,
+  hand: HandSummary,
+  chargeLevel: number,
+) {
+  const distance = Math.hypot(hand.x - particle.x, hand.y - particle.y);
+
+  if (distance > ATTRACT_RADIUS) {
+    return 0;
+  }
+
+  const closeness = 1 - distance / ATTRACT_RADIUS;
+  return Math.min(chargeLevel * (0.5 + closeness), 1);
+}
+
 export function drawParticleList(
   context: CanvasRenderingContext2D,
   particleList: Particle[],
 ) {
-  context.fillStyle = PARTICLE_COLOR;
-
   for (const particle of particleList) {
-    context.globalAlpha = Math.sin(
-      (particle.age / particle.lifespan) * Math.PI,
-    );
+    const lifeAlpha = Math.sin((particle.age / particle.lifespan) * Math.PI);
+    context.globalAlpha = Math.max(lifeAlpha, particle.heat);
+    context.fillStyle = getHeatColor(particle.heat);
     context.beginPath();
     context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
     context.fill();
