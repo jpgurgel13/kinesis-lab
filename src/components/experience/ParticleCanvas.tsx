@@ -1,9 +1,13 @@
 import { useEffect, useRef } from "react";
 import { experienceText } from "../../data/texts";
+import {
+  createParticleList,
+  drawParticleList,
+  updateParticleList,
+} from "../../simulation/particleField";
 import styles from "./ParticleCanvas.module.css";
 
-const CIRCLE_RADIUS = 40;
-const CIRCLE_SPEED = 120;
+const PARTICLE_COUNT = 4000;
 const MAX_DELTA_TIME = 0.1;
 
 function ParticleCanvas() {
@@ -20,7 +24,14 @@ function ParticleCanvas() {
       return;
     }
 
-    let circleX = 0;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+
+    const particleList = createParticleList(
+      PARTICLE_COUNT,
+      canvas.width,
+      canvas.height,
+    );
     let lastTime = performance.now();
     let frameId = 0;
 
@@ -39,16 +50,10 @@ function ParticleCanvas() {
         canvas.height = canvas.clientHeight;
       }
 
-      circleX = circleX + CIRCLE_SPEED * deltaTime;
-      if (circleX > canvas.width + CIRCLE_RADIUS) {
-        circleX = -CIRCLE_RADIUS;
-      }
+      updateParticleList(particleList, deltaTime, canvas.width, canvas.height);
 
       context.clearRect(0, 0, canvas.width, canvas.height);
-      context.beginPath();
-      context.arc(circleX, canvas.height / 3, CIRCLE_RADIUS, 0, Math.PI * 2);
-      context.fillStyle = "#3b82f6";
-      context.fill();
+      drawParticleList(context, particleList);
 
       frameId = requestAnimationFrame(drawFrame);
     };
