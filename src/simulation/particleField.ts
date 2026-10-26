@@ -15,14 +15,14 @@ const MAX_LIFESPAN = 15; // segundos
 const REPEL_RADIUS = 40; // pixels: maior que o anel, para o efeito começar antes do toque
 const REPEL_FORCE = 800; // pixels por segundo, a cada segundo
 const DRAG_RADIUS = 100; // pixels: alcance da mão que agita a água
-const DRAG_STRENGTH = 4.4; // quanto da velocidade da mão é passado às partículas
-const MAX_DRAG_SPEED = 450; // pixels por segundo: limite do empurrão
-const ATTRACT_RADIUS = 320; // pixels: alcance da mão fechada
+const DRAG_STRENGTH = 6; // quanto da velocidade da mão é passado às partículas
+const MAX_DRAG_SPEED = 500; // pixels por segundo: limite do empurrão
+const ATTRACT_RADIUS = 400; // pixels: alcance da mão fechada
 const ATTRACT_FORCE = 900; // pixels por segundo, a cada segundo
-const CORE_RADIUS = 30; // pixels: o núcleo onde as partículas se acumulam
+const CORE_RADIUS = 45; // pixels: o núcleo onde as partículas se acumulam
 const CORE_FORCE = 1500; // empurrão para fora do núcleo, para não virarem um ponto só
-const HEAT_SPEED = 3; // quanto a cor muda por segundo
-const AGITATION = 1200; // quanto as partículas quentes tremem
+const HEAT_SPEED = 4; // quanto a cor muda por segundo
+const AGITATION = 950; // quanto as partículas quentes tremem
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);

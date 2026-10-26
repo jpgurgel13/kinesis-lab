@@ -1,7 +1,7 @@
 import type { ChargeState } from "../types/chargeTypes";
 import type { HandSummary } from "../types/handTypes";
 
-const CHARGE_DURATION = 3; // segundos para a carga encher
+const CHARGE_DURATION = 4; // segundos para a carga encher
 
 export function createChargeState(): ChargeState {
   return { level: 0 };
