@@ -13,6 +13,9 @@ const MIN_LIFESPAN = 1; // segundos
 const MAX_LIFESPAN = 15; // segundos
 const REPEL_RADIUS = 40; // pixels: maior que o anel, para o efeito começar antes do toque
 const REPEL_FORCE = 800; // pixels por segundo, a cada segundo
+const DRAG_RADIUS = 120; // pixels: alcance da mão que agita a água
+const DRAG_STRENGTH = 6; // quanto da velocidade da mão é passado às partículas
+const MAX_DRAG_SPEED = 500; // pixels por segundo: limite do empurrão
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -75,9 +78,12 @@ export function updateParticleList(
     particle.velocityY =
       particle.velocityY +
       (targetVelocityY - particle.velocityY) * steeringAmount;
+
     if (hand.isVisible && !hand.isClosed) {
+      applyHandDrag(particle, hand, deltaTime);
       applyHandRepulsion(particle, hand, deltaTime);
     }
+
     particle.x = particle.x + particle.velocityX * deltaTime;
     particle.y = particle.y + particle.velocityY * deltaTime;
 
@@ -85,11 +91,8 @@ export function updateParticleList(
     if (particle.x > width) particle.x = 0;
     if (particle.y < 0) particle.y = height;
     if (particle.y > height) particle.y = 0;
-    if (particle.y > height) particle.y = 0;
 
     particle.age = particle.age + deltaTime;
-    if (particle.y > height) particle.y = 0;
-
     if (particle.age > particle.lifespan) {
       respawnParticle(particle, width, height);
     }
@@ -115,6 +118,37 @@ function applyHandRepulsion(
 
   particle.velocityX = particle.velocityX + directionX * strength * deltaTime;
   particle.velocityY = particle.velocityY + directionY * strength * deltaTime;
+}
+
+function applyHandDrag(
+  particle: Particle,
+  hand: HandSummary,
+  deltaTime: number,
+) {
+  const distanceX = particle.x - hand.x;
+  const distanceY = particle.y - hand.y;
+  const distance = Math.hypot(distanceX, distanceY);
+
+  if (distance > DRAG_RADIUS) {
+    return;
+  }
+
+  let handVelocityX = hand.velocityX;
+  let handVelocityY = hand.velocityY;
+  const handSpeed = Math.hypot(handVelocityX, handVelocityY);
+
+  if (handSpeed > MAX_DRAG_SPEED) {
+    handVelocityX = (handVelocityX / handSpeed) * MAX_DRAG_SPEED;
+    handVelocityY = (handVelocityY / handSpeed) * MAX_DRAG_SPEED;
+  }
+
+  const closeness = 1 - distance / DRAG_RADIUS;
+  const dragAmount = Math.min(DRAG_STRENGTH * closeness * deltaTime, 1);
+
+  particle.velocityX =
+    particle.velocityX + (handVelocityX - particle.velocityX) * dragAmount;
+  particle.velocityY =
+    particle.velocityY + (handVelocityY - particle.velocityY) * dragAmount;
 }
 
 export function drawParticleList(
