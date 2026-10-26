@@ -45,10 +45,16 @@
   pointer-events: none;
   right: var(--space-4);
   bottom: var(--space-4);
+  filter: drop-shadow(0 0 10px rgb(13 17 23 / 0.9));
+  transition: filter 0.3s ease;
+}
+
+.charging {
+  filter: drop-shadow(0 0 16px rgb(240 68 82 / 0.5));
 }
 
 @media (max-width: 480px) {
   .companion {
-    width: 80px;
+    width: 160px;
   }
 }

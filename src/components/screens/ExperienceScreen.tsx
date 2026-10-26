@@ -18,8 +18,13 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
   const [chargeStep, setChargeStep] = useState(0);
 
   const restingCompanion = isDemo ? companionImage.demo : companionImage.noHand;
-  const companion =
-    chargeStep > 0 ? chargeImageList[chargeStep - 1] : restingCompanion;
+  const isCharging = chargeStep > 0;
+  const companion = isCharging
+    ? chargeImageList[chargeStep - 1]
+    : restingCompanion;
+  const companionClassName = isCharging
+    ? `${styles.companion} ${styles.charging}`
+    : styles.companion;
 
   return (
     <section className={styles.experience} aria-label={modeLabel}>
@@ -38,9 +43,9 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
       <Mascot
         src={companion}
         alt=""
-        width={160}
-        height={128}
-        className={styles.companion}
+        width={240}
+        height={192}
+        className={companionClassName}
       />
     </section>
   );
