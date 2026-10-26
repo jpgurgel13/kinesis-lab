@@ -9,6 +9,8 @@ const CHARGE_RING_GAP = 8; // distância entre o anel e o indicador de carga
 const PULSE_SPEED = 12; // velocidade da pulsação com a carga cheia
 const PULSE_SIZE = 4; // pixels que o indicador cresce ao pulsar
 const FLASH_RADIUS = 260; // pixels: tamanho do flash com carga cheia
+const CORE_GLOW_RADIUS = 70; // pixels: tamanho da luz no centro do enxame
+const CORE_GLOW_STRENGTH = 0.7; // opacidade máxima da luz com carga cheia
 
 export function drawHandMarker(
   context: CanvasRenderingContext2D,
@@ -21,6 +23,7 @@ export function drawHandMarker(
   }
 
   if (hand.isClosed) {
+    drawChargeCore(context, hand, charge);
     drawChargeIndicator(context, hand, charge, elapsedTime);
     return;
   }
@@ -39,6 +42,32 @@ export function drawHandMarker(
     hand.y + hand.velocityY * VELOCITY_LINE_SCALE,
   );
   context.stroke();
+}
+
+function drawChargeCore(
+  context: CanvasRenderingContext2D,
+  hand: HandSummary,
+  charge: ChargeState,
+) {
+  const strength = charge.level * CORE_GLOW_STRENGTH;
+  const gradient = context.createRadialGradient(
+    hand.x,
+    hand.y,
+    0,
+    hand.x,
+    hand.y,
+    CORE_GLOW_RADIUS,
+  );
+  gradient.addColorStop(0, `rgba(255, 214, 218, ${strength})`);
+  gradient.addColorStop(0.4, `rgba(255, 214, 218, ${strength * 0.6})`);
+  gradient.addColorStop(1, "rgba(240, 68, 82, 0)");
+
+  context.globalCompositeOperation = "lighter";
+  context.fillStyle = gradient;
+  context.beginPath();
+  context.arc(hand.x, hand.y, CORE_GLOW_RADIUS, 0, Math.PI * 2);
+  context.fill();
+  context.globalCompositeOperation = "source-over";
 }
 
 function drawChargeIndicator(
