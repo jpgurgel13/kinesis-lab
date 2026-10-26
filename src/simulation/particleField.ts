@@ -23,6 +23,9 @@ const CORE_RADIUS = 45; // pixels: o núcleo onde as partículas se acumulam
 const CORE_FORCE = 1500; // empurrão para fora do núcleo, para não virarem um ponto só
 const HEAT_SPEED = 4; // quanto a cor muda por segundo
 const AGITATION = 950; // quanto as partículas quentes tremem
+const BURST_RADIUS = 500; // pixels: alcance da explosão
+const BURST_FORCE = 700; // pixels por segundo: velocidade dada pela explosão com carga cheia
+const BURST_SPREAD = 0.25; // radianos: quanto cada direção pode desviar
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -90,6 +93,10 @@ export function updateParticleList(
       (targetVelocityY - particle.velocityY) * steeringAmount;
 
     let targetHeat = 0;
+
+    if (charge.burstPower > 0) {
+      applyBurst(particle, charge);
+    }
 
     if (hand.isVisible && hand.isClosed) {
       applyHandAttraction(particle, hand, charge.level, deltaTime);
@@ -216,6 +223,25 @@ function getTargetHeat(
 
   const closeness = 1 - distance / ATTRACT_RADIUS;
   return Math.min(chargeLevel * (0.5 + closeness), 1);
+}
+
+function applyBurst(particle: Particle, charge: ChargeState) {
+  const distanceX = particle.x - charge.flashX;
+  const distanceY = particle.y - charge.flashY;
+  const distance = Math.hypot(distanceX, distanceY);
+
+  if (distance > BURST_RADIUS) {
+    return;
+  }
+
+  const angle =
+    Math.atan2(distanceY, distanceX) + randomBetween(-BURST_SPREAD, BURST_SPREAD);
+  const closeness = 1 - distance / BURST_RADIUS;
+  const impulse = charge.burstPower * BURST_FORCE * (0.3 + 0.7 * closeness);
+
+  particle.velocityX = particle.velocityX + Math.cos(angle) * impulse;
+  particle.velocityY = particle.velocityY + Math.sin(angle) * impulse;
+  particle.heat = Math.max(particle.heat, charge.burstPower * closeness);
 }
 
 export function drawParticleList(

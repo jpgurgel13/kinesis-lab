@@ -8,6 +8,7 @@ const VELOCITY_LINE_SCALE = 0.1;
 const CHARGE_RING_GAP = 8; // distância entre o anel e o indicador de carga
 const PULSE_SPEED = 12; // velocidade da pulsação com a carga cheia
 const PULSE_SIZE = 6; // pixels que o indicador cresce ao pulsar
+const FLASH_RADIUS = 160; // pixels: tamanho do flash com carga cheia
 
 export function drawHandMarker(
   context: CanvasRenderingContext2D,
@@ -63,4 +64,30 @@ function drawChargeIndicator(
   context.beginPath();
   context.arc(hand.x, hand.y, radius, startAngle, endAngle);
   context.stroke();
+}
+
+export function drawBurstFlash(
+  context: CanvasRenderingContext2D,
+  charge: ChargeState,
+) {
+  if (charge.flashLevel <= 0) {
+    return;
+  }
+
+  const radius = FLASH_RADIUS * charge.flashLevel;
+  const gradient = context.createRadialGradient(
+    charge.flashX,
+    charge.flashY,
+    0,
+    charge.flashX,
+    charge.flashY,
+    radius,
+  );
+  gradient.addColorStop(0, `rgba(255, 214, 218, ${charge.flashLevel})`);
+  gradient.addColorStop(1, "rgba(240, 68, 82, 0)");
+
+  context.fillStyle = gradient;
+  context.beginPath();
+  context.arc(charge.flashX, charge.flashY, radius, 0, Math.PI * 2);
+  context.fill();
 }

@@ -12,7 +12,7 @@ import {
   updateHandVelocity,
 } from "../../input/pointerHand";
 import { createChargeState, updateCharge } from "../../simulation/charge";
-import { drawHandMarker } from "../../simulation/handMarker";
+import { drawBurstFlash, drawHandMarker } from "../../simulation/handMarker";
 
 const PARTICLE_COUNT = 10000;
 const MAX_DELTA_TIME = 0.1;
@@ -79,6 +79,7 @@ function ParticleCanvas() {
 
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawParticleList(context, particleList);
+      drawBurstFlash(context, charge);
       drawHandMarker(context, hand, charge, elapsedTime);
 
       frameId = requestAnimationFrame(drawFrame);
