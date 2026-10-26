@@ -66,6 +66,7 @@ function ParticleCanvas() {
       previousHandY = hand.y;
       updateParticleList(
         particleList,
+        hand,
         deltaTime,
         elapsedTime,
         canvas.width,

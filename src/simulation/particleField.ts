@@ -1,3 +1,4 @@
+import type { HandSummary } from "../types/handTypes";
 import type { Particle } from "../types/particleTypes";
 
 const PARTICLE_COLOR = "#3b82f6";
@@ -10,6 +11,8 @@ const FLOW_CHANGE_SPEED = 0.15; // quanto as correntes mudam com o tempo
 const STEERING = 1.5; // quanto as partículas obedecem à corrente
 const MIN_LIFESPAN = 1; // segundos
 const MAX_LIFESPAN = 15; // segundos
+const REPEL_RADIUS = 40; // pixels: maior que o anel, para o efeito começar antes do toque
+const REPEL_FORCE = 800; // pixels por segundo, a cada segundo
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -52,6 +55,7 @@ function getFlowAngle(x: number, y: number, time: number) {
 
 export function updateParticleList(
   particleList: Particle[],
+  hand: HandSummary,
   deltaTime: number,
   elapsedTime: number,
   width: number,
@@ -71,7 +75,9 @@ export function updateParticleList(
     particle.velocityY =
       particle.velocityY +
       (targetVelocityY - particle.velocityY) * steeringAmount;
-
+    if (hand.isVisible && !hand.isClosed) {
+      applyHandRepulsion(particle, hand, deltaTime);
+    }
     particle.x = particle.x + particle.velocityX * deltaTime;
     particle.y = particle.y + particle.velocityY * deltaTime;
 
@@ -88,6 +94,27 @@ export function updateParticleList(
       respawnParticle(particle, width, height);
     }
   }
+}
+
+function applyHandRepulsion(
+  particle: Particle,
+  hand: HandSummary,
+  deltaTime: number,
+) {
+  const distanceX = particle.x - hand.x;
+  const distanceY = particle.y - hand.y;
+  const distance = Math.hypot(distanceX, distanceY);
+
+  if (distance === 0 || distance > REPEL_RADIUS) {
+    return;
+  }
+
+  const directionX = distanceX / distance;
+  const directionY = distanceY / distance;
+  const strength = (1 - distance / REPEL_RADIUS) * REPEL_FORCE;
+
+  particle.velocityX = particle.velocityX + directionX * strength * deltaTime;
+  particle.velocityY = particle.velocityY + directionY * strength * deltaTime;
 }
 
 export function drawParticleList(
