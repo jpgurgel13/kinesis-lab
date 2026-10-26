@@ -13,7 +13,7 @@ import {
 } from "../../input/pointerHand";
 import { drawHandMarker } from "../../simulation/handMarker";
 
-const PARTICLE_COUNT = 4000;
+const PARTICLE_COUNT = 10000;
 const MAX_DELTA_TIME = 0.1;
 
 function ParticleCanvas() {
