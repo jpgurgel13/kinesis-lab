@@ -7,8 +7,8 @@ const OPEN_COLOR = "#3b82f6";
 const VELOCITY_LINE_SCALE = 0.1;
 const CHARGE_RING_GAP = 8; // distância entre o anel e o indicador de carga
 const PULSE_SPEED = 12; // velocidade da pulsação com a carga cheia
-const PULSE_SIZE = 6; // pixels que o indicador cresce ao pulsar
-const FLASH_RADIUS = 160; // pixels: tamanho do flash com carga cheia
+const PULSE_SIZE = 4; // pixels que o indicador cresce ao pulsar
+const FLASH_RADIUS = 260; // pixels: tamanho do flash com carga cheia
 
 export function drawHandMarker(
   context: CanvasRenderingContext2D,

@@ -3,14 +3,14 @@ import type { HandSummary } from "../types/handTypes";
 import type { Particle } from "../types/particleTypes";
 import { getHeatColor } from "./heatColor";
 
-const MAX_SPEED = 30;
+const MAX_SPEED = 40;
 const MIN_RADIUS = 1;
 const MAX_RADIUS = 3;
 const FLOW_SPEED = 25; // pixels por segundo
 const FLOW_SCALE = 0.004; // quanto menor, mais largas as correntes
 const FLOW_CHANGE_SPEED = 0.15; // quanto as correntes mudam com o tempo
 const STEERING = 1.5; // quanto as partículas obedecem à corrente
-const MIN_LIFESPAN = 1; // segundos
+const MIN_LIFESPAN = 5.5; // segundos
 const MAX_LIFESPAN = 15; // segundos
 const REPEL_RADIUS = 40; // pixels: maior que o anel, para o efeito começar antes do toque
 const REPEL_FORCE = 800; // pixels por segundo, a cada segundo

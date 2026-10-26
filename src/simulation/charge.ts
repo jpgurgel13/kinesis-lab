@@ -1,7 +1,7 @@
 import type { ChargeState } from "../types/chargeTypes";
 import type { HandSummary } from "../types/handTypes";
 
-const CHARGE_DURATION = 3; // segundos para a carga encher
+const CHARGE_DURATION = 2.5; // segundos para a carga encher
 const MIN_BURST_POWER = 0.05; // abaixo disso, soltar não explode (um clique rápido)
 const CHARGE_STEP_SIZE = 0.25; // a carga é dividida em quatro etapas de 25%
 const FLASH_DURATION = 0.6; // segundos que o flash leva para sumir
