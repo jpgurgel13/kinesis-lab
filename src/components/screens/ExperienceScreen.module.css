@@ -41,7 +41,7 @@
 }
 
 .companion {
-  position: relative;
+  position: absolute;
   pointer-events: none;
   right: var(--space-4);
   bottom: var(--space-4);
