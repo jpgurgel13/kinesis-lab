@@ -84,7 +84,6 @@ export function updateParticleList(
     particle.age = particle.age + deltaTime;
     if (particle.y > height) particle.y = 0;
 
-    particle.age = particle.age + deltaTime;
     if (particle.age > particle.lifespan) {
       respawnParticle(particle, width, height);
     }
