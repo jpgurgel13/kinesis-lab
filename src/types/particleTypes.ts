@@ -5,4 +5,6 @@ export type Particle = {
   velocityY: number;
   radius: number;
   speedFactor: number;
+  age: number;
+  lifespan: number;
 };

@@ -8,6 +8,8 @@ const FLOW_SPEED = 25; // pixels por segundo
 const FLOW_SCALE = 0.004; // quanto menor, mais largas as correntes
 const FLOW_CHANGE_SPEED = 0.15; // quanto as correntes mudam com o tempo
 const STEERING = 1.5; // quanto as partículas obedecem à corrente
+const MIN_LIFESPAN = 1; // segundos
+const MAX_LIFESPAN = 15; // segundos
 
 function randomBetween(min: number, max: number) {
   return min + Math.random() * (max - min);
@@ -19,8 +21,9 @@ export function createParticleList(
   height: number,
 ): Particle[] {
   const particleList: Particle[] = [];
-
   for (let index = 0; index < count; index++) {
+    const lifespan = randomBetween(MIN_LIFESPAN, MAX_LIFESPAN);
+
     particleList.push({
       x: randomBetween(0, width),
       y: randomBetween(0, height),
@@ -28,12 +31,18 @@ export function createParticleList(
       velocityY: randomBetween(-MAX_SPEED, MAX_SPEED),
       radius: randomBetween(MIN_RADIUS, MAX_RADIUS),
       speedFactor: randomBetween(0.6, 1.4),
+      age: randomBetween(0, lifespan),
+      lifespan,
     });
   }
 
   return particleList;
 }
-
+function respawnParticle(particle: Particle, width: number, height: number) {
+  particle.x = randomBetween(0, width);
+  particle.y = randomBetween(0, height);
+  particle.age = 0;
+}
 function getFlowAngle(x: number, y: number, time: number) {
   const waveX = Math.sin(x * FLOW_SCALE + time * FLOW_CHANGE_SPEED);
   const waveY = Math.cos(y * FLOW_SCALE - time * FLOW_CHANGE_SPEED);
@@ -70,6 +79,15 @@ export function updateParticleList(
     if (particle.x > width) particle.x = 0;
     if (particle.y < 0) particle.y = height;
     if (particle.y > height) particle.y = 0;
+    if (particle.y > height) particle.y = 0;
+
+    particle.age = particle.age + deltaTime;
+    if (particle.y > height) particle.y = 0;
+
+    particle.age = particle.age + deltaTime;
+    if (particle.age > particle.lifespan) {
+      respawnParticle(particle, width, height);
+    }
   }
 }
 
@@ -80,8 +98,13 @@ export function drawParticleList(
   context.fillStyle = PARTICLE_COLOR;
 
   for (const particle of particleList) {
+    context.globalAlpha = Math.sin(
+      (particle.age / particle.lifespan) * Math.PI,
+    );
     context.beginPath();
     context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
     context.fill();
   }
+
+  context.globalAlpha = 1;
 }
