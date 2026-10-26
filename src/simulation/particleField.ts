@@ -58,6 +58,9 @@ export function createParticleList(
 function respawnParticle(particle: Particle, width: number, height: number) {
   particle.x = randomBetween(0, width);
   particle.y = randomBetween(0, height);
+  particle.velocityX = 0;
+  particle.velocityY = 0;
+  particle.heat = 0;
   particle.age = 0;
 }
 function getFlowAngle(x: number, y: number, time: number) {
@@ -117,13 +120,15 @@ export function updateParticleList(
     particle.x = particle.x + particle.velocityX * deltaTime;
     particle.y = particle.y + particle.velocityY * deltaTime;
 
-    if (particle.x < 0) particle.x = width;
-    if (particle.x > width) particle.x = 0;
-    if (particle.y < 0) particle.y = height;
-    if (particle.y > height) particle.y = 0;
-
     particle.age = particle.age + deltaTime;
-    if (particle.age > particle.lifespan) {
+
+    const isOutsideCanvas =
+      particle.x < 0 ||
+      particle.x > width ||
+      particle.y < 0 ||
+      particle.y > height;
+
+    if (isOutsideCanvas || particle.age > particle.lifespan) {
       respawnParticle(particle, width, height);
     }
   }

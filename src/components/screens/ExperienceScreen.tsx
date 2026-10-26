@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { buttonText, experienceText } from "../../data/texts";
-import { companionImage } from "../../data/mascotData";
+import { chargeImageList, companionImage } from "../../data/mascotData";
 import Button from "../ui/Button";
 import Mascot from "../ui/Mascot";
 import styles from "./ExperienceScreen.module.css";
@@ -14,7 +15,11 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
     ? experienceText.demoMode
     : experienceText.cameraMode;
   const hint = isDemo ? experienceText.demoHint : experienceText.noHandHint;
-  const companion = isDemo ? companionImage.demo : companionImage.noHand;
+  const [chargeStep, setChargeStep] = useState(0);
+
+  const restingCompanion = isDemo ? companionImage.demo : companionImage.noHand;
+  const companion =
+    chargeStep > 0 ? chargeImageList[chargeStep - 1] : restingCompanion;
 
   return (
     <section className={styles.experience} aria-label={modeLabel}>
@@ -26,7 +31,7 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
       </div>
 
       <div className={styles.stage}>
-        <ParticleCanvas />
+        <ParticleCanvas onChargeStepChange={setChargeStep} />
         <p className={styles.hint}>{hint}</p>
       </div>
 

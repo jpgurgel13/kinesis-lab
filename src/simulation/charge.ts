@@ -3,6 +3,7 @@ import type { HandSummary } from "../types/handTypes";
 
 const CHARGE_DURATION = 3; // segundos para a carga encher
 const MIN_BURST_POWER = 0.05; // abaixo disso, soltar não explode (um clique rápido)
+const CHARGE_STEP_SIZE = 0.25; // a carga é dividida em quatro etapas de 25%
 const FLASH_DURATION = 0.6; // segundos que o flash leva para sumir
 
 export function createChargeState(): ChargeState {
@@ -41,4 +42,8 @@ export function updateCharge(
   }
 
   charge.level = 0;
+}
+
+export function getChargeStep(level: number) {
+  return Math.floor(level / CHARGE_STEP_SIZE);
 }

@@ -11,13 +11,21 @@ import {
   createHandSummary,
   updateHandVelocity,
 } from "../../input/pointerHand";
-import { createChargeState, updateCharge } from "../../simulation/charge";
+import {
+  createChargeState,
+  getChargeStep,
+  updateCharge,
+} from "../../simulation/charge";
 import { drawBurstFlash, drawHandMarker } from "../../simulation/handMarker";
 
 const PARTICLE_COUNT = 10000;
 const MAX_DELTA_TIME = 0.1;
 
-function ParticleCanvas() {
+type ParticleCanvasProps = {
+  onChargeStepChange: (chargeStep: number) => void;
+};
+
+function ParticleCanvas({ onChargeStepChange }: ParticleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -42,6 +50,7 @@ function ParticleCanvas() {
     const hand = createHandSummary();
     const disconnectPointer = connectPointerToHand(canvas, hand);
     const charge = createChargeState();
+    let lastChargeStep = 0;
     let previousHandX = hand.x;
     let previousHandY = hand.y;
     let lastTime = performance.now();
@@ -67,6 +76,13 @@ function ParticleCanvas() {
       previousHandX = hand.x;
       previousHandY = hand.y;
       updateCharge(charge, hand, deltaTime);
+
+      const chargeStep = getChargeStep(charge.level);
+      if (chargeStep !== lastChargeStep) {
+        lastChargeStep = chargeStep;
+        onChargeStepChange(chargeStep);
+      }
+
       updateParticleList(
         particleList,
         hand,
@@ -91,7 +107,7 @@ function ParticleCanvas() {
       cancelAnimationFrame(frameId);
       disconnectPointer();
     };
-  }, []);
+  }, [onChargeStepChange]);
 
   return (
     <canvas

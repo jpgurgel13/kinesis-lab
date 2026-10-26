@@ -6,6 +6,10 @@ import genericErrorImage from "../assets/mascot/generic-error.png";
 import endedImage from "../assets/mascot/ended.png";
 import showHandImage from "../assets/mascot/show-hand.png";
 import demoModeImage from "../assets/mascot/demo-mode.png";
+import chargeStep1Image from "../assets/mascot/charge-step-1.png";
+import chargeStep2Image from "../assets/mascot/charge-step-2.png";
+import chargeStep3Image from "../assets/mascot/charge-step-3.png";
+import chargeStep4Image from "../assets/mascot/charge-step-4.png";
 import type { ScreenMascot } from "../types/experienceTypes";
 
 export const screenMascotList: ScreenMascot[] = [
@@ -21,3 +25,11 @@ export const companionImage = {
   noHand: showHandImage,
   demo: demoModeImage,
 };
+
+// Uma pose para cada quarto da carga: 25%, 50%, 75% e 100%
+export const chargeImageList = [
+  chargeStep1Image,
+  chargeStep2Image,
+  chargeStep3Image,
+  chargeStep4Image,
+];
