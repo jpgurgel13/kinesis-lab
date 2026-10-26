@@ -33,6 +33,7 @@ function ParticleCanvas() {
       canvas.height,
     );
     let lastTime = performance.now();
+    let elapsedTime = 0;
     let frameId = 0;
 
     const drawFrame = (currentTime: number) => {
@@ -41,6 +42,7 @@ function ParticleCanvas() {
         MAX_DELTA_TIME,
       );
       lastTime = currentTime;
+      elapsedTime = elapsedTime + deltaTime;
 
       if (
         canvas.width !== canvas.clientWidth ||
@@ -50,7 +52,13 @@ function ParticleCanvas() {
         canvas.height = canvas.clientHeight;
       }
 
-      updateParticleList(particleList, deltaTime, canvas.width, canvas.height);
+      updateParticleList(
+        particleList,
+        deltaTime,
+        elapsedTime,
+        canvas.width,
+        canvas.height,
+      );
 
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawParticleList(context, particleList);

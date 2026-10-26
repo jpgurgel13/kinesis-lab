@@ -4,4 +4,5 @@ export type Particle = {
   velocityX: number;
   velocityY: number;
   radius: number;
+  speedFactor: number;
 };
