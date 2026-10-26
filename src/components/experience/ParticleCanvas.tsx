@@ -6,6 +6,12 @@ import {
   updateParticleList,
 } from "../../simulation/particleField";
 import styles from "./ParticleCanvas.module.css";
+import {
+  connectPointerToHand,
+  createHandSummary,
+  updateHandVelocity,
+} from "../../input/pointerHand";
+import { drawHandMarker } from "../../simulation/handMarker";
 
 const PARTICLE_COUNT = 4000;
 const MAX_DELTA_TIME = 0.1;
@@ -32,6 +38,10 @@ function ParticleCanvas() {
       canvas.width,
       canvas.height,
     );
+    const hand = createHandSummary();
+    const disconnectPointer = connectPointerToHand(canvas, hand);
+    let previousHandX = hand.x;
+    let previousHandY = hand.y;
     let lastTime = performance.now();
     let elapsedTime = 0;
     let frameId = 0;
@@ -51,7 +61,9 @@ function ParticleCanvas() {
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
       }
-
+      updateHandVelocity(hand, previousHandX, previousHandY, deltaTime);
+      previousHandX = hand.x;
+      previousHandY = hand.y;
       updateParticleList(
         particleList,
         deltaTime,
@@ -62,6 +74,7 @@ function ParticleCanvas() {
 
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawParticleList(context, particleList);
+      drawHandMarker(context, hand);
 
       frameId = requestAnimationFrame(drawFrame);
     };
@@ -70,6 +83,7 @@ function ParticleCanvas() {
 
     return () => {
       cancelAnimationFrame(frameId);
+      disconnectPointer();
     };
   }, []);
 

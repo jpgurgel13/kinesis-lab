@@ -34,13 +34,15 @@
 
 .hint {
   position: relative;
+  pointer-events: none;
   max-width: 40ch;
   color: var(--color-text-muted);
   text-align: center;
 }
 
 .companion {
-  position: absolute;
+  position: relative;
+  pointer-events: none;
   right: var(--space-4);
   bottom: var(--space-4);
 }
