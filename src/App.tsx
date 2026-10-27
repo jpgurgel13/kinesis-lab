@@ -69,7 +69,11 @@ function App() {
 
       <main className={styles.main}>
         {isExperienceOn ? (
-          <ExperienceScreen isDemo={status === "demo"} onEnd={handleEnd} />
+          <ExperienceScreen
+            isDemo={status === "demo"}
+            cameraStream={cameraStream}
+            onEnd={handleEnd}
+          />
         ) : (
           <StatusScreen status={status}>{statusActions}</StatusScreen>
         )}

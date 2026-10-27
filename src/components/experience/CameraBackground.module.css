@@ -1,0 +1,11 @@
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* espelho: mexer a mão direita mexe o lado direito */
+  opacity: 0.2;
+  filter: grayscale(1) brightness(0.8);
+  pointer-events: none;
+}

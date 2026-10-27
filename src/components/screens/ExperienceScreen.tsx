@@ -5,12 +5,19 @@ import Button from "../ui/Button";
 import Mascot from "../ui/Mascot";
 import styles from "./ExperienceScreen.module.css";
 import ParticleCanvas from "../experience/ParticleCanvas";
+import CameraBackground from "../experience/CameraBackground";
+
 type ExperienceScreenProps = {
   isDemo: boolean;
+  cameraStream: MediaStream | null;
   onEnd: () => void;
 };
 
-function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
+function ExperienceScreen({
+  isDemo,
+  cameraStream,
+  onEnd,
+}: ExperienceScreenProps) {
   const modeLabel = isDemo
     ? experienceText.demoMode
     : experienceText.cameraMode;
@@ -42,6 +49,7 @@ function ExperienceScreen({ isDemo, onEnd }: ExperienceScreenProps) {
       </div>
 
       <div className={styles.stage}>
+        {cameraStream && <CameraBackground stream={cameraStream} />}
         <ParticleCanvas onChargeStepChange={setChargeStep} />
         <p className={styles.hint}>{hint}</p>
       </div>
