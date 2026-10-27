@@ -8,12 +8,13 @@ import type {
 
 // Se um quadro passar disso sem resposta, consideramos que a GPU travou
 const STALL_TIMEOUT = 2000; // milissegundos
+const FRAME_WIDTH = 320; // pixels: largura da foto enviada ao worker
 const STATS_INTERVAL = 2000; // milissegundos entre cada relatório no Console
 
 // Medição de desempenho, só durante o desenvolvimento (npm run dev)
-const stats = { count: 0, totalTime: 0, startedAt: 0 };
+const stats = { count: 0, totalTime: 0, totalDetectTime: 0, startedAt: 0 };
 
-function recordStats(responseTime: number) {
+function recordStats(responseTime: number, detectTime: number) {
   if (!import.meta.env.DEV) {
     return;
   }
@@ -25,16 +26,19 @@ function recordStats(responseTime: number) {
 
   stats.count = stats.count + 1;
   stats.totalTime = stats.totalTime + responseTime;
+  stats.totalDetectTime = stats.totalDetectTime + detectTime;
 
   const elapsed = now - stats.startedAt;
   if (elapsed >= STATS_INTERVAL) {
     const perSecond = (stats.count / elapsed) * 1000;
     const averageTime = stats.totalTime / stats.count;
+    const averageDetectTime = stats.totalDetectTime / stats.count;
     console.info(
-      `Kinesis: ${perSecond.toFixed(1)} detecções/s | resposta média: ${averageTime.toFixed(0)} ms`,
+      `Kinesis: ${perSecond.toFixed(1)} detecções/s | ida e volta: ${averageTime.toFixed(0)} ms | só a IA: ${averageDetectTime.toFixed(0)} ms`,
     );
     stats.count = 0;
     stats.totalTime = 0;
+    stats.totalDetectTime = 0;
     stats.startedAt = now;
   }
 }
@@ -76,7 +80,7 @@ function listenForResults(tracker: HandTracker) {
       if (event.data.type === "result") {
         tracker.landmarkList = event.data.landmarkList;
         tracker.isBusy = false;
-        recordStats(performance.now() - tracker.sentAt);
+        recordStats(performance.now() - tracker.sentAt, event.data.detectTime);
       }
     },
   );
@@ -141,7 +145,15 @@ export async function sendVideoFrame(
   tracker.sentAt = performance.now();
 
   try {
-    const frame = await createImageBitmap(video);
+    // O MediaPipe reduz a imagem por dentro de qualquer jeito,
+    // então mandar uma foto menor só economiza transporte.
+    const frameHeight = Math.round(
+      (FRAME_WIDTH * video.videoHeight) / video.videoWidth,
+    );
+    const frame = await createImageBitmap(video, {
+      resizeWidth: FRAME_WIDTH,
+      resizeHeight: frameHeight,
+    });
     const frameMessage: WorkerRequest = { type: "frame", frame, timestamp };
     tracker.worker.postMessage(frameMessage, [frame]);
   } catch {

@@ -48,11 +48,16 @@ self.addEventListener("message", (event: MessageEvent<WorkerRequest>) => {
   }
 
   if (handLandmarker) {
+    const detectStart = performance.now();
     const result = handLandmarker.detectForVideo(
       message.frame,
       message.timestamp,
     );
-    reply({ type: "result", landmarkList: result.landmarks[0] ?? null });
+    reply({
+      type: "result",
+      landmarkList: result.landmarks[0] ?? null,
+      detectTime: performance.now() - detectStart,
+    });
   }
 
   message.frame.close(); // libera a memória do quadro

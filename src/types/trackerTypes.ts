@@ -11,7 +11,11 @@ export type WorkerRequest =
 export type WorkerResponse =
   | { type: "ready" }
   | { type: "failed" }
-  | { type: "result"; landmarkList: NormalizedLandmark[] | null };
+  | {
+      type: "result";
+      landmarkList: NormalizedLandmark[] | null;
+      detectTime: number; // quanto a IA levou lá dentro, em milissegundos
+    };
 
 export type HandTracker = {
   worker: Worker;
