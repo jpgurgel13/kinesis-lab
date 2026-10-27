@@ -102,13 +102,13 @@ function ParticleCanvas({
         sendVideoFrame(handTracker, video, currentTime);
       }
 
-      const landmarkList = handTracker ? handTracker.landmarkList : null;
+      const trackedHand = handTracker ? handTracker.trackedHand : null;
       const wasHandVisible = hand.isVisible;
 
       if (handTracker && video) {
         updateHandFromCamera(
           hand,
-          landmarkList,
+          trackedHand,
           video,
           canvas.width,
           canvas.height,
@@ -151,10 +151,10 @@ function ParticleCanvas({
       drawBurstFlash(context, charge);
       drawHandMarker(context, hand, charge, elapsedTime);
 
-      if (landmarkList && video) {
+      if (trackedHand && video) {
         drawHandSkeleton(
           context,
-          landmarkList,
+          trackedHand.landmarkList,
           video,
           canvas.width,
           canvas.height,

@@ -53,9 +53,15 @@ self.addEventListener("message", (event: MessageEvent<WorkerRequest>) => {
       message.frame,
       message.timestamp,
     );
+    const hasHand = result.landmarks.length > 0;
     reply({
       type: "result",
-      landmarkList: result.landmarks[0] ?? null,
+      trackedHand: hasHand
+        ? {
+            landmarkList: result.landmarks[0],
+            worldLandmarkList: result.worldLandmarks[0],
+          }
+        : null,
       detectTime: performance.now() - detectStart,
     });
   }

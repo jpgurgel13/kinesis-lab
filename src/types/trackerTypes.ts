@@ -1,6 +1,12 @@
-import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
+import type { Landmark, NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 export type DetectorDelegate = "GPU" | "CPU";
+
+// Uma mão encontrada pelo MediaPipe, nos dois formatos que ele entrega
+export type TrackedHand = {
+  landmarkList: NormalizedLandmark[]; // na imagem, de 0 a 1 (para posição)
+  worldLandmarkList: Landmark[]; // em 3D, em metros (para o formato da mão)
+};
 
 // O que a página manda para o worker
 export type WorkerRequest =
@@ -13,7 +19,7 @@ export type WorkerResponse =
   | { type: "failed" }
   | {
       type: "result";
-      landmarkList: NormalizedLandmark[] | null;
+      trackedHand: TrackedHand | null;
       detectTime: number; // quanto a IA levou lá dentro, em milissegundos
     };
 
@@ -22,5 +28,6 @@ export type HandTracker = {
   delegate: DetectorDelegate;
   isBusy: boolean; // true enquanto o worker analisa um quadro
   sentAt: number; // quando o último quadro foi enviado
-  landmarkList: NormalizedLandmark[] | null; // a última mão encontrada
+  trackedHand: TrackedHand | null; // a última mão encontrada
+  lastSeenAt: number; // quando a mão foi vista pela última vez
 };

@@ -7,6 +7,7 @@ import type {
 
 // Se um quadro passar disso sem resposta, consideramos que a GPU travou
 const STALL_TIMEOUT = 2000; // milissegundos
+const LOST_HAND_GRACE = 250; // milissegundos: perdas mais curtas são ignoradas
 const FRAME_WIDTH = 320; // pixels: largura da foto enviada ao worker
 const STATS_INTERVAL = 2000; // milissegundos entre cada relatório no Console
 
@@ -77,7 +78,17 @@ function listenForResults(tracker: HandTracker) {
     "message",
     (event: MessageEvent<WorkerResponse>) => {
       if (event.data.type === "result") {
-        tracker.landmarkList = event.data.landmarkList;
+        const now = performance.now();
+
+        // A câmera às vezes perde a mão por um instante (borrão, movimento rápido).
+        // Só consideramos que ela sumiu se ficar fora por mais que a tolerância.
+        if (event.data.trackedHand) {
+          tracker.trackedHand = event.data.trackedHand;
+          tracker.lastSeenAt = now;
+        } else if (now - tracker.lastSeenAt > LOST_HAND_GRACE) {
+          tracker.trackedHand = null;
+        }
+
         tracker.isBusy = false;
         recordStats(performance.now() - tracker.sentAt, event.data.detectTime);
       }
@@ -102,7 +113,8 @@ export async function createHandTracker() {
     delegate,
     isBusy: false,
     sentAt: 0,
-    landmarkList: null,
+    trackedHand: null,
+    lastSeenAt: 0,
   };
   listenForResults(tracker);
   console.info(`Kinesis: detector de mãos usando ${delegate}`);
