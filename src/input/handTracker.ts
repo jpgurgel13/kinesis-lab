@@ -1,4 +1,3 @@
-import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import type {
   DetectorDelegate,
   HandTracker,
@@ -168,7 +167,7 @@ export function closeHandTracker(tracker: HandTracker) {
 // Converte um ponto do vídeo (de 0 a 1) para pixels do canvas,
 // desfazendo o espelho e o corte do object-fit: cover.
 export function landmarkToCanvas(
-  landmark: NormalizedLandmark,
+  landmark: { x: number; y: number },
   video: HTMLVideoElement,
   width: number,
   height: number,

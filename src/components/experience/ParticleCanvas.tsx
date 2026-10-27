@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import type { HandTracker } from "../../types/trackerTypes";
 import { sendVideoFrame } from "../../input/handTracker";
+import { updateHandFromCamera } from "../../input/cameraHand";
 import { experienceText } from "../../data/texts";
 import {
   createParticleList,
@@ -61,7 +62,10 @@ function ParticleCanvas({
       canvas.height,
     );
     const hand = createHandSummary();
-    const disconnectPointer = connectPointerToHand(canvas, hand);
+    // No modo câmera, quem move a mão é o MediaPipe; o mouse fica só na demonstração
+    const disconnectPointer = handTracker
+      ? null
+      : connectPointerToHand(canvas, hand);
     const charge = createChargeState();
     let lastChargeStep = 0;
     let lastVideoTime = -1;
@@ -86,9 +90,43 @@ function ParticleCanvas({
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
       }
+      // 1. Câmera: manda o quadro novo para o MediaPipe e lê a última mão
+      const video = videoRef.current;
+      const hasNewVideoFrame =
+        video !== null &&
+        video.readyState >= 2 &&
+        video.currentTime !== lastVideoTime;
+
+      if (handTracker && hasNewVideoFrame) {
+        lastVideoTime = video.currentTime;
+        sendVideoFrame(handTracker, video, currentTime);
+      }
+
+      const landmarkList = handTracker ? handTracker.landmarkList : null;
+      const wasHandVisible = hand.isVisible;
+
+      if (handTracker && video) {
+        updateHandFromCamera(
+          hand,
+          landmarkList,
+          video,
+          canvas.width,
+          canvas.height,
+          deltaTime,
+        );
+      }
+
+      // 2. Velocidade da mão. Se ela acabou de aparecer, não conta o "salto"
+      // de onde estava antes até onde surgiu, senão as partículas explodiriam.
+      if (!wasHandVisible) {
+        previousHandX = hand.x;
+        previousHandY = hand.y;
+      }
       updateHandVelocity(hand, previousHandX, previousHandY, deltaTime);
       previousHandX = hand.x;
       previousHandY = hand.y;
+
+      // 3. Carga e partículas
       updateCharge(charge, hand, deltaTime);
 
       const chargeStep = getChargeStep(charge.level);
@@ -107,21 +145,7 @@ function ParticleCanvas({
         canvas.height,
       );
 
-      // Só manda para o MediaPipe quando chega um quadro novo da câmera
-      const video = videoRef.current;
-      const hasNewVideoFrame =
-        video !== null &&
-        video.readyState >= 2 &&
-        video.currentTime !== lastVideoTime;
-
-      if (handTracker && hasNewVideoFrame) {
-        lastVideoTime = video.currentTime;
-        sendVideoFrame(handTracker, video, currentTime);
-      }
-
-      // A resposta do worker chega depois, sem a animação ficar esperando
-      const landmarkList = handTracker ? handTracker.landmarkList : null;
-
+      // 4. Desenho
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawParticleList(context, particleList);
       drawBurstFlash(context, charge);
@@ -144,7 +168,9 @@ function ParticleCanvas({
 
     return () => {
       cancelAnimationFrame(frameId);
-      disconnectPointer();
+      if (disconnectPointer) {
+        disconnectPointer();
+      }
     };
   }, [handTracker, videoRef, onChargeStepChange]);
 
