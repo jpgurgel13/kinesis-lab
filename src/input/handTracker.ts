@@ -8,6 +8,36 @@ import type {
 
 // Se um quadro passar disso sem resposta, consideramos que a GPU travou
 const STALL_TIMEOUT = 2000; // milissegundos
+const STATS_INTERVAL = 2000; // milissegundos entre cada relatório no Console
+
+// Medição de desempenho, só durante o desenvolvimento (npm run dev)
+const stats = { count: 0, totalTime: 0, startedAt: 0 };
+
+function recordStats(responseTime: number) {
+  if (!import.meta.env.DEV) {
+    return;
+  }
+
+  const now = performance.now();
+  if (stats.startedAt === 0) {
+    stats.startedAt = now;
+  }
+
+  stats.count = stats.count + 1;
+  stats.totalTime = stats.totalTime + responseTime;
+
+  const elapsed = now - stats.startedAt;
+  if (elapsed >= STATS_INTERVAL) {
+    const perSecond = (stats.count / elapsed) * 1000;
+    const averageTime = stats.totalTime / stats.count;
+    console.info(
+      `Kinesis: ${perSecond.toFixed(1)} detecções/s | resposta média: ${averageTime.toFixed(0)} ms`,
+    );
+    stats.count = 0;
+    stats.totalTime = 0;
+    stats.startedAt = now;
+  }
+}
 
 // Liga um worker novo e espera o MediaPipe ficar pronto lá dentro
 function startWorker(delegate: DetectorDelegate) {
@@ -46,6 +76,7 @@ function listenForResults(tracker: HandTracker) {
       if (event.data.type === "result") {
         tracker.landmarkList = event.data.landmarkList;
         tracker.isBusy = false;
+        recordStats(performance.now() - tracker.sentAt);
       }
     },
   );
