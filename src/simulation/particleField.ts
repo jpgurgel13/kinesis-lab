@@ -4,27 +4,27 @@ import type { Particle } from "../types/particleTypes";
 import { getHeatColor } from "./heatColor";
 
 const MAX_SPEED = 40;
-const MIN_RADIUS = 1;
-const MAX_RADIUS = 3;
+const MIN_RADIUS = 0.5;
+const MAX_RADIUS = 2.5;
 const FLOW_SPEED = 25; // pixels por segundo
 const FLOW_SCALE = 0.004; // quanto menor, mais largas as correntes
 const FLOW_CHANGE_SPEED = 0.15; // quanto as correntes mudam com o tempo
 const STEERING = 1.5; // quanto as partículas obedecem à corrente
-const MIN_LIFESPAN = 5.5; // segundos
+const MIN_LIFESPAN = 3.5; // segundos
 const MAX_LIFESPAN = 15; // segundos
 const REPEL_RADIUS = 40; // pixels: maior que o anel, para o efeito começar antes do toque
 const REPEL_FORCE = 800; // pixels por segundo, a cada segundo
 const DRAG_RADIUS = 100; // pixels: alcance da mão que agita a água
 const DRAG_STRENGTH = 6; // quanto da velocidade da mão é passado às partículas
-const MAX_DRAG_SPEED = 500; // pixels por segundo: limite do empurrão
-const ATTRACT_RADIUS = 400; // pixels: alcance da mão fechada
+const MAX_DRAG_SPEED = 600; // pixels por segundo: limite do empurrão
+const ATTRACT_RADIUS = 1000; // pixels: alcance da mão fechada
 const ATTRACT_FORCE = 900; // pixels por segundo, a cada segundo
 const CORE_RADIUS = 45; // pixels: o núcleo onde as partículas se acumulam
 const CORE_FORCE = 1500; // empurrão para fora do núcleo, para não virarem um ponto só
 const HEAT_SPEED = 4; // quanto a cor muda por segundo
 const AGITATION = 950; // quanto as partículas quentes tremem
-const BURST_RADIUS = 500; // pixels: alcance da explosão
-const BURST_FORCE = 1100; // pixels por segundo: velocidade dada pela explosão com carga cheia
+const BURST_RADIUS = 950; // pixels: alcance da explosão
+const BURST_FORCE = 1550; // pixels por segundo: velocidade dada pela explosão com carga cheia
 const BURST_SPREAD = 1.4; // radianos: quanto cada direção pode desviar
 
 function randomBetween(min: number, max: number) {

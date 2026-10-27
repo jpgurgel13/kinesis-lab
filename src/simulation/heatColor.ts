@@ -1,5 +1,5 @@
 const COLD_COLOR = [59, 130, 246]; // azul #3b82f6
-const HOT_COLOR = [240, 68, 82]; // vermelho #f04452
+const HOT_COLOR = [240, 68, 82]; // vermelho #e60013
 const HEAT_COLOR_STEPS = 24;
 
 function mixChannel(cold: number, hot: number, heat: number) {
