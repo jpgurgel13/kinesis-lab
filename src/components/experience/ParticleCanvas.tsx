@@ -1,9 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import type {
-  HandLandmarker,
-  NormalizedLandmark,
-} from "@mediapipe/tasks-vision";
+import type { HandTracker } from "../../types/trackerTypes";
+import { sendVideoFrame } from "../../input/handTracker";
 import { experienceText } from "../../data/texts";
 import {
   createParticleList,
@@ -31,7 +29,7 @@ const PARTICLE_COUNT = 10000;
 const MAX_DELTA_TIME = 0.1;
 
 type ParticleCanvasProps = {
-  handTracker: HandLandmarker | null;
+  handTracker: HandTracker | null;
   videoRef: RefObject<HTMLVideoElement | null>;
   onChargeStepChange: (chargeStep: number) => void;
 };
@@ -67,7 +65,6 @@ function ParticleCanvas({
     const charge = createChargeState();
     let lastChargeStep = 0;
     let lastVideoTime = -1;
-    let landmarkList: NormalizedLandmark[] | null = null;
     let previousHandX = hand.x;
     let previousHandY = hand.y;
     let lastTime = performance.now();
@@ -110,7 +107,7 @@ function ParticleCanvas({
         canvas.height,
       );
 
-      // O MediaPipe só analisa quando chega um quadro novo da câmera
+      // Só manda para o MediaPipe quando chega um quadro novo da câmera
       const video = videoRef.current;
       const hasNewVideoFrame =
         video !== null &&
@@ -119,9 +116,11 @@ function ParticleCanvas({
 
       if (handTracker && hasNewVideoFrame) {
         lastVideoTime = video.currentTime;
-        const result = handTracker.detectForVideo(video, currentTime);
-        landmarkList = result.landmarks[0] ?? null;
+        sendVideoFrame(handTracker, video, currentTime);
       }
+
+      // A resposta do worker chega depois, sem a animação ficar esperando
+      const landmarkList = handTracker ? handTracker.landmarkList : null;
 
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawParticleList(context, particleList);

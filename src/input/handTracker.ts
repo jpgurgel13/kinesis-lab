@@ -1,23 +1,125 @@
-import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
+import type {
+  DetectorDelegate,
+  HandTracker,
+  WorkerRequest,
+  WorkerResponse,
+} from "../types/trackerTypes";
 
-// A versão aqui precisa ser a mesma do package.json
-const WASM_PATH =
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/wasm";
-const MODEL_PATH =
-  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+// Se um quadro passar disso sem resposta, consideramos que a GPU travou
+const STALL_TIMEOUT = 2000; // milissegundos
 
-export async function createHandTracker() {
-  const vision = await FilesetResolver.forVisionTasks(WASM_PATH);
+// Liga um worker novo e espera o MediaPipe ficar pronto lá dentro
+function startWorker(delegate: DetectorDelegate) {
+  return new Promise<Worker>((resolve, reject) => {
+    const worker = new Worker(new URL("./handWorker.ts", import.meta.url), {
+      type: "module",
+    });
 
-  return HandLandmarker.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath: MODEL_PATH,
-      delegate: "GPU",
-    },
-    runningMode: "VIDEO",
-    numHands: 1,
+    worker.addEventListener(
+      "message",
+      (event: MessageEvent<WorkerResponse>) => {
+        if (event.data.type === "ready") {
+          resolve(worker);
+        } else if (event.data.type === "failed") {
+          worker.terminate();
+          reject(new Error("O detector de mãos não carregou"));
+        }
+      },
+    );
+
+    worker.addEventListener("error", () => {
+      worker.terminate();
+      reject(new Error("O worker não iniciou"));
+    });
+
+    const startMessage: WorkerRequest = { type: "start", delegate };
+    worker.postMessage(startMessage);
   });
+}
+
+// Guarda cada resposta do worker no tracker
+function listenForResults(tracker: HandTracker) {
+  tracker.worker.addEventListener(
+    "message",
+    (event: MessageEvent<WorkerResponse>) => {
+      if (event.data.type === "result") {
+        tracker.landmarkList = event.data.landmarkList;
+        tracker.isBusy = false;
+      }
+    },
+  );
+}
+
+// Tenta a GPU (mais rápida). Se ela não carregar, usa a CPU.
+export async function createHandTracker() {
+  let delegate: DetectorDelegate = "GPU";
+  let worker: Worker;
+
+  try {
+    worker = await startWorker("GPU");
+  } catch {
+    delegate = "CPU";
+    worker = await startWorker("CPU");
+  }
+
+  const tracker: HandTracker = {
+    worker,
+    delegate,
+    isBusy: false,
+    sentAt: 0,
+    landmarkList: null,
+  };
+  listenForResults(tracker);
+  console.info(`Kinesis: detector de mãos usando ${delegate}`);
+
+  return tracker;
+}
+
+// Plano B: a GPU travou no meio do caminho, então troca para a CPU
+async function switchToCpu(tracker: HandTracker) {
+  tracker.delegate = "CPU"; // marca logo, para não trocar duas vezes
+  tracker.worker.terminate();
+
+  try {
+    tracker.worker = await startWorker("CPU");
+    listenForResults(tracker);
+    tracker.isBusy = false;
+    console.info("Kinesis: a GPU travou, detector trocado para CPU");
+  } catch {
+    // sem detector: a experiência continua, só sem a mão
+  }
+}
+
+// Tira uma "foto" do vídeo e manda para o worker analisar.
+// Se ele ainda estiver ocupado com o quadro anterior, pula este.
+export async function sendVideoFrame(
+  tracker: HandTracker,
+  video: HTMLVideoElement,
+  timestamp: number,
+) {
+  if (tracker.isBusy) {
+    const waitingTime = performance.now() - tracker.sentAt;
+    if (waitingTime > STALL_TIMEOUT && tracker.delegate === "GPU") {
+      switchToCpu(tracker);
+    }
+    return;
+  }
+
+  tracker.isBusy = true;
+  tracker.sentAt = performance.now();
+
+  try {
+    const frame = await createImageBitmap(video);
+    const frameMessage: WorkerRequest = { type: "frame", frame, timestamp };
+    tracker.worker.postMessage(frameMessage, [frame]);
+  } catch {
+    tracker.isBusy = false;
+  }
+}
+
+export function closeHandTracker(tracker: HandTracker) {
+  tracker.worker.terminate();
 }
 
 // Converte um ponto do vídeo (de 0 a 1) para pixels do canvas,

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import type { HandLandmarker } from "@mediapipe/tasks-vision";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import StatusScreen from "./components/screens/StatusScreen";
@@ -12,14 +11,15 @@ import {
   requestCamera,
   stopCamera,
 } from "./input/camera";
-import { createHandTracker } from "./input/handTracker";
+import { closeHandTracker, createHandTracker } from "./input/handTracker";
+import type { HandTracker } from "./types/trackerTypes";
 import type { ExperienceStatus } from "./types/experienceTypes";
 import styles from "./App.module.css";
 
 function App() {
   const [status, setStatus] = useState<ExperienceStatus>("welcome");
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [handTracker, setHandTracker] = useState<HandLandmarker | null>(null);
+  const [handTracker, setHandTracker] = useState<HandTracker | null>(null);
   const isExperienceOn = status === "running" || status === "demo";
 
   async function handleStart() {
@@ -51,7 +51,7 @@ function App() {
     }
 
     if (handTracker) {
-      handTracker.close();
+      closeHandTracker(handTracker);
       setHandTracker(null);
     }
 

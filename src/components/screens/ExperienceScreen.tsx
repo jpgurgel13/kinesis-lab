@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { HandLandmarker } from "@mediapipe/tasks-vision";
+import type { HandTracker } from "../../types/trackerTypes";
 import { buttonText, experienceText } from "../../data/texts";
 import { chargeImageList, companionImage } from "../../data/mascotData";
 import Button from "../ui/Button";
@@ -11,7 +11,7 @@ import CameraBackground from "../experience/CameraBackground";
 type ExperienceScreenProps = {
   isDemo: boolean;
   cameraStream: MediaStream | null;
-  handTracker: HandLandmarker | null;
+  handTracker: HandTracker | null;
   onEnd: () => void;
 };
 

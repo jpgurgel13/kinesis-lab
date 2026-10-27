@@ -4,4 +4,7 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  worker: {
+    format: 'es', // o worker do MediaPipe usa import, então precisa ser módulo
+  },
 })
