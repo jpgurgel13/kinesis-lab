@@ -5,6 +5,7 @@ import cameraMissingImage from "../assets/mascot/camera-missing.png";
 import genericErrorImage from "../assets/mascot/generic-error.png";
 import endedImage from "../assets/mascot/ended.png";
 import showHandImage from "../assets/mascot/show-hand.png";
+import driftImage from "../assets/mascot/drift.png";
 import demoModeImage from "../assets/mascot/demo-mode.png";
 import chargeStep1Image from "../assets/mascot/charge-step-1.png";
 import chargeStep2Image from "../assets/mascot/charge-step-2.png";
@@ -23,6 +24,7 @@ export const screenMascotList: ScreenMascot[] = [
 
 export const companionImage = {
   noHand: showHandImage,
+  handVisible: driftImage,
   demo: demoModeImage,
 };
 

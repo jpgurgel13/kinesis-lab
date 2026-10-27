@@ -27,8 +27,14 @@ function ExperienceScreen({
     : experienceText.cameraMode;
   const hint = isDemo ? experienceText.demoHint : experienceText.noHandHint;
   const [chargeStep, setChargeStep] = useState(0);
+  const [isHandVisible, setIsHandVisible] = useState(false);
 
-  const restingCompanion = isDemo ? companionImage.demo : companionImage.noHand;
+  let restingCompanion = companionImage.noHand;
+  if (isDemo) {
+    restingCompanion = companionImage.demo;
+  } else if (isHandVisible) {
+    restingCompanion = companionImage.handVisible;
+  }
   const isCharging = chargeStep > 0;
   const isFullCharge = chargeStep === chargeImageList.length;
   const companion = isCharging
@@ -60,8 +66,9 @@ function ExperienceScreen({
           handTracker={handTracker}
           videoRef={videoRef}
           onChargeStepChange={setChargeStep}
+          onHandVisibleChange={setIsHandVisible}
         />
-        <p className={styles.hint}>{hint}</p>
+        {!isHandVisible && <p className={styles.hint}>{hint}</p>}
       </div>
 
       <Mascot

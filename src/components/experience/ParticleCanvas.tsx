@@ -20,11 +20,7 @@ import {
   getChargeStep,
   updateCharge,
 } from "../../simulation/charge";
-import {
-  drawBurstFlash,
-  drawHandMarker,
-  drawHandSkeleton,
-} from "../../simulation/handMarker";
+import { drawBurstFlash, drawHandMarker } from "../../simulation/handMarker";
 
 const PARTICLE_COUNT = 10000;
 const MAX_DELTA_TIME = 0.1;
@@ -33,12 +29,14 @@ type ParticleCanvasProps = {
   handTracker: HandTracker | null;
   videoRef: RefObject<HTMLVideoElement | null>;
   onChargeStepChange: (chargeStep: number) => void;
+  onHandVisibleChange: (isHandVisible: boolean) => void;
 };
 
 function ParticleCanvas({
   handTracker,
   videoRef,
   onChargeStepChange,
+  onHandVisibleChange,
 }: ParticleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -68,6 +66,7 @@ function ParticleCanvas({
       : connectPointerToHand(canvas, hand);
     const charge = createChargeState();
     let lastChargeStep = 0;
+    let lastHandVisible = false;
     let lastVideoTime = -1;
     let previousHandX = hand.x;
     let previousHandY = hand.y;
@@ -116,6 +115,12 @@ function ParticleCanvas({
         );
       }
 
+      // Avisa o React só quando a mão aparece ou some (não a cada quadro)
+      if (hand.isVisible !== lastHandVisible) {
+        lastHandVisible = hand.isVisible;
+        onHandVisibleChange(hand.isVisible);
+      }
+
       // 2. Velocidade da mão. Se ela acabou de aparecer, não conta o "salto"
       // de onde estava antes até onde surgiu, senão as partículas explodiriam.
       if (!wasHandVisible) {
@@ -151,16 +156,6 @@ function ParticleCanvas({
       drawBurstFlash(context, charge);
       drawHandMarker(context, hand, charge, elapsedTime);
 
-      if (trackedHand && video) {
-        drawHandSkeleton(
-          context,
-          trackedHand.landmarkList,
-          video,
-          canvas.width,
-          canvas.height,
-        );
-      }
-
       frameId = requestAnimationFrame(drawFrame);
     };
 
@@ -172,7 +167,7 @@ function ParticleCanvas({
         disconnectPointer();
       }
     };
-  }, [handTracker, videoRef, onChargeStepChange]);
+  }, [handTracker, videoRef, onChargeStepChange, onHandVisibleChange]);
 
   return (
     <canvas

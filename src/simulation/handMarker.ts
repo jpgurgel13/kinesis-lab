@@ -1,18 +1,12 @@
-import { HandLandmarker } from "@mediapipe/tasks-vision";
-import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { landmarkToCanvas } from "../input/handTracker";
 import type { ChargeState } from "../types/chargeTypes";
 import type { HandSummary } from "../types/handTypes";
 import { getHeatColor } from "./heatColor";
 
 const MARKER_RADIUS = 24;
-const OPEN_COLOR = "#3b82f6";
-const VELOCITY_LINE_SCALE = 0.1;
-const CHARGE_RING_GAP = 8; // distância entre o anel e o indicador de carga
+const MARKER_COLOR = "rgba(147, 197, 253, 0.45)"; // azul claro translúcido
+const CHARGE_RING_RADIUS = 90; // pixels: por fora do enxame que se forma na mão
 const PULSE_SPEED = 12; // velocidade da pulsação com a carga cheia
 const PULSE_SIZE = 4; // pixels que o indicador cresce ao pulsar
-const SKELETON_COLOR = "rgba(255, 255, 255, 0.7)";
-const SKELETON_POINT_RADIUS = 4;
 const FLASH_RADIUS = 260; // pixels: tamanho do flash com carga cheia
 
 export function drawHandMarker(
@@ -30,19 +24,11 @@ export function drawHandMarker(
     return;
   }
 
-  context.strokeStyle = OPEN_COLOR;
-  context.lineWidth = 2;
+  context.strokeStyle = MARKER_COLOR;
+  context.lineWidth = 1.5;
 
   context.beginPath();
   context.arc(hand.x, hand.y, MARKER_RADIUS, 0, Math.PI * 2);
-  context.stroke();
-
-  context.beginPath();
-  context.moveTo(hand.x, hand.y);
-  context.lineTo(
-    hand.x + hand.velocityX * VELOCITY_LINE_SCALE,
-    hand.y + hand.velocityY * VELOCITY_LINE_SCALE,
-  );
   context.stroke();
 }
 
@@ -54,7 +40,7 @@ function drawChargeIndicator(
 ) {
   const isFull = charge.level >= 1;
   const pulse = isFull ? Math.sin(elapsedTime * PULSE_SPEED) * PULSE_SIZE : 0;
-  const radius = MARKER_RADIUS + CHARGE_RING_GAP + pulse;
+  const radius = CHARGE_RING_RADIUS + pulse;
   const startAngle = -Math.PI / 2;
   const endAngle = startAngle + charge.level * Math.PI * 2;
 
@@ -95,37 +81,4 @@ export function drawBurstFlash(
   context.beginPath();
   context.arc(charge.flashX, charge.flashY, radius, 0, Math.PI * 2);
   context.fill();
-}
-
-// Provisório: mostra os 21 pontos que o MediaPipe encontrou na mão
-export function drawHandSkeleton(
-  context: CanvasRenderingContext2D,
-  landmarkList: NormalizedLandmark[],
-  video: HTMLVideoElement,
-  width: number,
-  height: number,
-) {
-  const pointList = landmarkList.map((landmark) =>
-    landmarkToCanvas(landmark, video, width, height),
-  );
-
-  context.strokeStyle = SKELETON_COLOR;
-  context.fillStyle = SKELETON_COLOR;
-  context.lineWidth = 2;
-
-  for (const connection of HandLandmarker.HAND_CONNECTIONS) {
-    const start = pointList[connection.start];
-    const end = pointList[connection.end];
-
-    context.beginPath();
-    context.moveTo(start.x, start.y);
-    context.lineTo(end.x, end.y);
-    context.stroke();
-  }
-
-  for (const point of pointList) {
-    context.beginPath();
-    context.arc(point.x, point.y, SKELETON_POINT_RADIUS, 0, Math.PI * 2);
-    context.fill();
-  }
 }
