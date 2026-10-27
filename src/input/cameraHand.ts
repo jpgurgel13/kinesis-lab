@@ -1,5 +1,5 @@
 import type { Landmark, NormalizedLandmark } from "@mediapipe/tasks-vision";
-import type { HandSummary } from "../types/handTypes";
+import type { HandShape, HandSummary, Point } from "../types/handTypes";
 import type { TrackedHand } from "../types/trackerTypes";
 import { landmarkToCanvas } from "./handTracker";
 
@@ -7,6 +7,10 @@ import { landmarkToCanvas } from "./handTracker";
 // Esses pontos quase não se mexem quando os dedos abrem e fecham.
 const PALM_POINT_LIST = [0, 5, 9, 13, 17];
 const HAND_FOLLOW_SPEED = 27.5; // quão rápido o anel alcança a mão detectada
+
+// Grossura da mão na tela, proporcional ao tamanho da palma (pulso até a base do médio)
+const BONE_RADIUS_RATIO = 0.16; // dedos
+const PALM_RADIUS_RATIO = 0.6; // palma
 
 // Pontos usados para saber se a mão está aberta ou fechada
 const WRIST = 0;
@@ -53,6 +57,41 @@ function getPalmCenter(landmarkList: NormalizedLandmark[]) {
   };
 }
 
+// Monta o formato da mão. Os pontos chegam só ~12 vezes por segundo, então
+// "carregamos" o formato junto com o anel suavizado: cada ponto é deslocado
+// pela mesma diferença entre a palma detectada e a posição suavizada da mão.
+function buildHandShape(
+  rawPointList: Point[],
+  rawPalm: Point,
+  hand: HandSummary,
+): HandShape {
+  const offsetX = hand.x - rawPalm.x;
+  const offsetY = hand.y - rawPalm.y;
+  const pointList = rawPointList.map((point) => ({
+    x: point.x + offsetX,
+    y: point.y + offsetY,
+  }));
+
+  const wrist = pointList[WRIST];
+  const middleBase = pointList[MIDDLE_FINGER_BASE];
+  const palmSize = Math.hypot(middleBase.x - wrist.x, middleBase.y - wrist.y);
+  const boneRadius = palmSize * BONE_RADIUS_RATIO;
+  const palmRadius = palmSize * PALM_RADIUS_RATIO;
+
+  let minX = hand.x - palmRadius;
+  let maxX = hand.x + palmRadius;
+  let minY = hand.y - palmRadius;
+  let maxY = hand.y + palmRadius;
+  for (const point of pointList) {
+    minX = Math.min(minX, point.x - boneRadius);
+    maxX = Math.max(maxX, point.x + boneRadius);
+    minY = Math.min(minY, point.y - boneRadius);
+    maxY = Math.max(maxY, point.y + boneRadius);
+  }
+
+  return { pointList, boneRadius, palmRadius, minX, maxX, minY, maxY };
+}
+
 export function updateHandFromCamera(
   hand: HandSummary,
   trackedHand: TrackedHand | null,
@@ -64,6 +103,7 @@ export function updateHandFromCamera(
   if (!trackedHand) {
     hand.isVisible = false;
     hand.isClosed = false;
+    hand.shape = null;
     return;
   }
 
@@ -83,16 +123,21 @@ export function updateHandFromCamera(
     height,
   );
 
-  // A mão acabou de aparecer: começa direto no lugar certo
   if (!hand.isVisible) {
+    // A mão acabou de aparecer: começa direto no lugar certo
     hand.x = palm.x;
     hand.y = palm.y;
     hand.isVisible = true;
-    return;
+  } else {
+    // Entre uma detecção e outra, o anel desliza até a mão em vez de pular
+    const follow = Math.min(HAND_FOLLOW_SPEED * deltaTime, 1);
+    hand.x = hand.x + (palm.x - hand.x) * follow;
+    hand.y = hand.y + (palm.y - hand.y) * follow;
   }
 
-  // Entre uma detecção e outra, o anel desliza até a mão em vez de pular
-  const follow = Math.min(HAND_FOLLOW_SPEED * deltaTime, 1);
-  hand.x = hand.x + (palm.x - hand.x) * follow;
-  hand.y = hand.y + (palm.y - hand.y) * follow;
+  // Qual o formato?
+  const rawPointList = trackedHand.landmarkList.map((landmark) =>
+    landmarkToCanvas(landmark, video, width, height),
+  );
+  hand.shape = buildHandShape(rawPointList, palm, hand);
 }

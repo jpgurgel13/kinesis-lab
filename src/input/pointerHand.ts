@@ -10,6 +10,7 @@ export function createHandSummary(): HandSummary {
     velocityY: 0,
     isVisible: false,
     isClosed: false,
+    shape: null,
   };
 }
 
