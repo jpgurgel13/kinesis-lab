@@ -2,9 +2,9 @@ import type { ChargeState } from "../types/chargeTypes";
 import type { HandSummary } from "../types/handTypes";
 import { getHeatColor } from "./heatColor";
 
-const MARKER_RADIUS = 24;
+const MARKER_RADIUS = 40; // pixels: anel da mão aberta
 const MARKER_COLOR = "rgba(147, 197, 253, 0.45)"; // azul claro translúcido
-const CHARGE_RING_RADIUS = 90; // pixels: por fora do enxame que se forma na mão
+const CHARGE_RING_RADIUS = 60; // pixels: arco de carga, logo por fora do núcleo do enxame
 const PULSE_SPEED = 12; // velocidade da pulsação com a carga cheia
 const PULSE_SIZE = 4; // pixels que o indicador cresce ao pulsar
 const FLASH_RADIUS = 260; // pixels: tamanho do flash com carga cheia
