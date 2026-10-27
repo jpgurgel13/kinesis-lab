@@ -23,7 +23,7 @@ import {
 } from "../../simulation/charge";
 import { drawBurstFlash, drawHandMarker } from "../../simulation/handMarker";
 
-const PARTICLE_COUNT = 10000;
+const PARTICLE_COUNT = 15000;
 const MAX_DELTA_TIME = 0.1;
 
 type ParticleCanvasProps = {
