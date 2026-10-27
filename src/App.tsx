@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
+import type { HandLandmarker } from "@mediapipe/tasks-vision";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import StatusScreen from "./components/screens/StatusScreen";
@@ -11,23 +12,35 @@ import {
   requestCamera,
   stopCamera,
 } from "./input/camera";
+import { createHandTracker } from "./input/handTracker";
 import type { ExperienceStatus } from "./types/experienceTypes";
 import styles from "./App.module.css";
 
 function App() {
   const [status, setStatus] = useState<ExperienceStatus>("welcome");
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [handTracker, setHandTracker] = useState<HandLandmarker | null>(null);
   const isExperienceOn = status === "running" || status === "demo";
 
   async function handleStart() {
     setStatus("loading");
 
+    let stream: MediaStream;
     try {
-      const stream = await requestCamera();
-      setCameraStream(stream);
-      setStatus("running");
+      stream = await requestCamera();
     } catch (error) {
       setStatus(getCameraErrorStatus(error));
+      return;
+    }
+
+    try {
+      const tracker = await createHandTracker();
+      setCameraStream(stream);
+      setHandTracker(tracker);
+      setStatus("running");
+    } catch {
+      stopCamera(stream);
+      setStatus("error");
     }
   }
 
@@ -35,6 +48,11 @@ function App() {
     if (cameraStream) {
       stopCamera(cameraStream);
       setCameraStream(null);
+    }
+
+    if (handTracker) {
+      handTracker.close();
+      setHandTracker(null);
     }
 
     setStatus("ended");
@@ -72,6 +90,7 @@ function App() {
           <ExperienceScreen
             isDemo={status === "demo"}
             cameraStream={cameraStream}
+            handTracker={handTracker}
             onEnd={handleEnd}
           />
         ) : (

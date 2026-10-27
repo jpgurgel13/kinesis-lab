@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { HandLandmarker } from "@mediapipe/tasks-vision";
 import { buttonText, experienceText } from "../../data/texts";
 import { chargeImageList, companionImage } from "../../data/mascotData";
 import Button from "../ui/Button";
@@ -10,14 +11,17 @@ import CameraBackground from "../experience/CameraBackground";
 type ExperienceScreenProps = {
   isDemo: boolean;
   cameraStream: MediaStream | null;
+  handTracker: HandLandmarker | null;
   onEnd: () => void;
 };
 
 function ExperienceScreen({
   isDemo,
   cameraStream,
+  handTracker,
   onEnd,
 }: ExperienceScreenProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const modeLabel = isDemo
     ? experienceText.demoMode
     : experienceText.cameraMode;
@@ -49,8 +53,14 @@ function ExperienceScreen({
       </div>
 
       <div className={styles.stage}>
-        {cameraStream && <CameraBackground stream={cameraStream} />}
-        <ParticleCanvas onChargeStepChange={setChargeStep} />
+        {cameraStream && (
+          <CameraBackground stream={cameraStream} videoRef={videoRef} />
+        )}
+        <ParticleCanvas
+          handTracker={handTracker}
+          videoRef={videoRef}
+          onChargeStepChange={setChargeStep}
+        />
         <p className={styles.hint}>{hint}</p>
       </div>
 

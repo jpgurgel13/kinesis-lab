@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import type { RefObject } from "react";
 import styles from "./CameraBackground.module.css";
 
 type CameraBackgroundProps = {
   stream: MediaStream;
+  videoRef: RefObject<HTMLVideoElement | null>;
 };
 
-function CameraBackground({ stream }: CameraBackgroundProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
+function CameraBackground({ stream, videoRef }: CameraBackgroundProps) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) {
@@ -19,7 +19,7 @@ function CameraBackground({ stream }: CameraBackgroundProps) {
     return () => {
       video.srcObject = null;
     };
-  }, [stream]);
+  }, [stream, videoRef]);
 
   return (
     <video
