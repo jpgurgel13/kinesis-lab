@@ -1,6 +1,7 @@
 import type { ChargeState } from "../types/chargeTypes";
 import type { HandSummary } from "../types/handTypes";
 import { getHeatColor } from "./heatColor";
+import { MOTION_SCALE } from "./motionPreference";
 
 const MARKER_RADIUS = 40; // pixels: anel da mão aberta
 const MARKER_COLOR = "rgba(147, 197, 253, 0.45)"; // azul claro translúcido
@@ -74,7 +75,8 @@ export function drawBurstFlash(
     charge.flashY,
     radius,
   );
-  gradient.addColorStop(0, `rgba(255, 214, 218, ${charge.flashLevel})`);
+  const brightness = charge.flashLevel * MOTION_SCALE;
+  gradient.addColorStop(0, `rgba(255, 214, 218, ${brightness})`);
   gradient.addColorStop(1, "rgba(240, 68, 82, 0)");
 
   context.fillStyle = gradient;

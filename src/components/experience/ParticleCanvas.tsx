@@ -11,6 +11,7 @@ import {
 } from "../../simulation/particleField";
 import styles from "./ParticleCanvas.module.css";
 import {
+  connectKeyboardToHand,
   connectPointerToHand,
   createHandSummary,
   updateHandVelocity,
@@ -60,10 +61,15 @@ function ParticleCanvas({
       canvas.height,
     );
     const hand = createHandSummary();
-    // No modo câmera, quem move a mão é o MediaPipe; o mouse fica só na demonstração
-    const disconnectPointer = handTracker
-      ? null
-      : connectPointerToHand(canvas, hand);
+    // No modo câmera, quem move a mão é o MediaPipe.
+    // Mouse e teclado ficam só na demonstração.
+    const isDemo = handTracker === null;
+    const disconnectPointer = isDemo
+      ? connectPointerToHand(canvas, hand)
+      : null;
+    const disconnectKeyboard = isDemo
+      ? connectKeyboardToHand(canvas, hand)
+      : null;
     const charge = createChargeState();
     let lastChargeStep = 0;
     let lastHandVisible = false;
@@ -166,6 +172,9 @@ function ParticleCanvas({
       if (disconnectPointer) {
         disconnectPointer();
       }
+      if (disconnectKeyboard) {
+        disconnectKeyboard();
+      }
     };
   }, [handTracker, videoRef, onChargeStepChange, onHandVisibleChange]);
 
@@ -174,7 +183,12 @@ function ParticleCanvas({
       ref={canvasRef}
       className={styles.canvas}
       role="img"
-      aria-label={experienceText.canvasLabel}
+      aria-label={
+        handTracker
+          ? experienceText.canvasLabel
+          : experienceText.demoCanvasLabel
+      }
+      tabIndex={handTracker ? undefined : 0}
     />
   );
 }

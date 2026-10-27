@@ -48,7 +48,13 @@ export const experienceText = {
   demoMode: "Demonstração",
   noHandHint: "Mostre a mão para a câmera",
   demoHint:
-    "Mova o mouse para agitar as partículas. Segure o clique para carregar e solte para liberar.",
+    "Mova o mouse para agitar as partículas. Segure o clique (ou a barra de espaço) para carregar e solte para liberar.",
+  handFoundStatus: "Mão detectada.",
+  handLostStatus: "Nenhuma mão na câmera.",
+  chargingStatus: "Carregando:",
+  fullChargeStatus: "Carga cheia. Solte para liberar.",
+  demoCanvasLabel:
+    "Partículas de luz que reagem ao movimento. Segure a barra de espaço para carregar e solte para liberar.",
 };
 
 export const buttonText = {

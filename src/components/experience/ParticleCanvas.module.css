@@ -6,3 +6,9 @@
   height: 100%;
   touch-action: none;
 }
+
+/* Contorno visível quando o palco recebe foco pelo teclado (Tab) */
+.canvas:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: -4px;
+}

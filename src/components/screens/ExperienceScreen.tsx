@@ -41,6 +41,19 @@ function ExperienceScreen({
     ? chargeImageList[chargeStep - 1]
     : restingCompanion;
 
+  // Texto lido por leitores de tela quando algo importante muda
+  let statusMessage = "";
+  if (isFullCharge) {
+    statusMessage = experienceText.fullChargeStatus;
+  } else if (isCharging) {
+    const chargePercent = (chargeStep / chargeImageList.length) * 100;
+    statusMessage = `${experienceText.chargingStatus} ${chargePercent}%`;
+  } else if (!isDemo) {
+    statusMessage = isHandVisible
+      ? experienceText.handFoundStatus
+      : experienceText.handLostStatus;
+  }
+
   let companionClassName = styles.companion;
   if (isCharging) {
     companionClassName += ` ${styles.charging}`;
@@ -70,6 +83,10 @@ function ExperienceScreen({
         />
         {!isHandVisible && <p className={styles.hint}>{hint}</p>}
       </div>
+
+      <p className={styles.screenReaderOnly} role="status">
+        {statusMessage}
+      </p>
 
       <Mascot
         src={companion}

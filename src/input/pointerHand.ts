@@ -51,6 +51,50 @@ export function connectPointerToHand(
   };
 }
 
+// Para quem usa só o teclado: com o palco focado (Tab), segurar a barra de
+// espaço fecha a mão. Se o mouse não estiver no palco, a mão surge no centro.
+export function connectKeyboardToHand(
+  canvas: HTMLCanvasElement,
+  hand: HandSummary,
+) {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.code !== "Space") {
+      return;
+    }
+
+    event.preventDefault(); // sem isso, a barra de espaço rolaria a página
+
+    if (!hand.isVisible) {
+      hand.x = canvas.clientWidth / 2;
+      hand.y = canvas.clientHeight / 2;
+      hand.isVisible = true;
+    }
+
+    hand.isClosed = true;
+  };
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if (event.code === "Space") {
+      hand.isClosed = false;
+    }
+  };
+
+  // Se o foco sair do palco no meio da carga, solta a mão
+  const handleBlur = () => {
+    hand.isClosed = false;
+  };
+
+  canvas.addEventListener("keydown", handleKeyDown);
+  canvas.addEventListener("keyup", handleKeyUp);
+  canvas.addEventListener("blur", handleBlur);
+
+  return () => {
+    canvas.removeEventListener("keydown", handleKeyDown);
+    canvas.removeEventListener("keyup", handleKeyUp);
+    canvas.removeEventListener("blur", handleBlur);
+  };
+}
+
 export function updateHandVelocity(
   hand: HandSummary,
   previousX: number,

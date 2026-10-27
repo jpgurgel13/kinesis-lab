@@ -2,6 +2,7 @@ import type { ChargeState } from "../types/chargeTypes";
 import type { HandShape, HandSummary, Point } from "../types/handTypes";
 import type { Particle } from "../types/particleTypes";
 import { getHeatColor } from "./heatColor";
+import { MOTION_SCALE } from "./motionPreference";
 
 const MAX_SPEED = 40;
 const MIN_RADIUS = 0.5;
@@ -132,10 +133,18 @@ export function updateParticleList(
     particle.heat = particle.heat + (targetHeat - particle.heat) * heatAmount;
     particle.velocityX =
       particle.velocityX +
-      randomBetween(-1, 1) * AGITATION * particle.heat * deltaTime;
+      randomBetween(-1, 1) *
+        AGITATION *
+        MOTION_SCALE *
+        particle.heat *
+        deltaTime;
     particle.velocityY =
       particle.velocityY +
-      randomBetween(-1, 1) * AGITATION * particle.heat * deltaTime;
+      randomBetween(-1, 1) *
+        AGITATION *
+        MOTION_SCALE *
+        particle.heat *
+        deltaTime;
 
     particle.x = particle.x + particle.velocityX * deltaTime;
     particle.y = particle.y + particle.velocityY * deltaTime;
@@ -348,7 +357,8 @@ function applyBurst(particle: Particle, charge: ChargeState) {
     Math.atan2(distanceY, distanceX) +
     randomBetween(-BURST_SPREAD, BURST_SPREAD);
   const closeness = 1 - distance / BURST_RADIUS;
-  const impulse = charge.burstPower * BURST_FORCE * (0.3 + 0.7 * closeness);
+  const impulse =
+    charge.burstPower * BURST_FORCE * MOTION_SCALE * (0.3 + 0.7 * closeness);
 
   particle.velocityX = particle.velocityX + Math.cos(angle) * impulse;
   particle.velocityY = particle.velocityY + Math.sin(angle) * impulse;
