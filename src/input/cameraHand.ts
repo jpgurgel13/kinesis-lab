@@ -5,7 +5,7 @@ import { landmarkToCanvas } from "./handTracker";
 // Pulso (0) e a base dos quatro dedos (5, 9, 13, 17): o "miolo" da mão.
 // Esses pontos quase não se mexem quando os dedos abrem e fecham.
 const PALM_POINT_LIST = [0, 5, 9, 13, 17];
-const HAND_FOLLOW_SPEED = 15; // quão rápido o anel alcança a mão detectada
+const HAND_FOLLOW_SPEED = 27.5; // quão rápido o anel alcança a mão detectada
 
 function getPalmCenter(landmarkList: NormalizedLandmark[]) {
   let sumX = 0;
